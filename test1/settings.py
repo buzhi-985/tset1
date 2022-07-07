@@ -13,6 +13,8 @@ import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -29,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'simpleui',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,12 +80,30 @@ WSGI_APPLICATION = 'test1.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
+DEFAULT_CHARSET = 'utf-8'
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',  # mysql 驱动
+        'NAME': 'test1',  # 数据库名
+        'USER': 'root',  # 用户名
+        'PASSWORD': 'root',  # 密码
+        'HOST': 'localhost',  # 访问的地址（localhost|127.0.0.1|''） 都代表本机
+        'PORT': '3306',  # 端口号 mysql默认端口是3306
+        'OPTIONS': {'charset': 'utf8mb4'},
     }
+
+    # 'default': {
+    #     'HOST': 'localhost',
+    #     'PORT': 3306,
+    #     'USER': 'root',
+    #     'PASSWORD': 'root',
+    #     'DB': 'test1',
+    #     'ENGINE': pymysql.cursors.DictCursor
+    # }
 }
 
 # Password validation
@@ -125,7 +146,10 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
+# 文件上传功能
+MEDIA_URL = '/appendix/'
+# 设置上传文件的路径
+MEDIA_ROOT = os.path.join(BASE_DIR, 'appendix')
 # SITE_ID
 SITE_ID = 1
 # 使用邮箱或者username登录
@@ -145,11 +169,10 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'  # 强制注册邮箱验证(注册成功后�
 # 将重写的form注册一下
 ACCOUNT_FORMS = ({
     'signup': 'PetProfile.forms.CustomSignupForm',
-    'reset_password': 'PetProfile.forms.CustomResetPasswordForm',
+    # 'reset_password': 'PetProfile.forms.CustomResetPasswordForm',
 })
-
-
-
+ACCOUNT_RESET_PASSWORD_FORM_CLASS = 'PetProfile.forms.CustomResetPasswordForm'  # 与上面的效果一样
+# MEDIA_ROOT='appendix/'
 EMAIL_FROM = "likebuzhi@qq.com"  # 发件人
 # Host for sending email.
 EMAIL_HOST = 'smtp.qq.com'  # 发送方的smtp服务器地址

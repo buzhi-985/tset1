@@ -63,11 +63,11 @@ class CustomPasswordResetView(PasswordResetView):
         # print(reset_password_form)
         if reset_password_form.is_valid():
             # 取到身份证之后取到用户对象
-            user_telephone = reset_password_form.cleaned_data['user_telephone']
+            user_telephone = reset_password_form.clean_identity_card()
             # username = PetProfile.objects.get(user_telephone=user_telephone).first()
             username = PetProfile.objects.filter(user_telephone=user_telephone).first() # 因为没设置手机号码唯一只能通过这解决
             # print(username)
-            user = User.objects.get(username=username)
+            user = User.objects.filter(username=username).first()
             # print(user, username)
             # 生成token
             token_generator = kwargs.get("token_generator", default_token_generator)

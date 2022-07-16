@@ -85,14 +85,20 @@ class PetProfileAdmin(admin.ModelAdmin):
         'last_editor',
         # 'pet_illness',
         'is_handle',
+        'reply',
     ]
 
     list_editable = [
-        'is_handle'
+        'is_handle',
+        'pet_name',
+        'reply'
     ]
+
     list_filter = ['pet_breed', 'pet_age', 'pet_gender', 'user__email', ]
 
     search_fields = ['pet_name', 'user_telephone', 'pet_breed', 'pet_id']
+    # 排序，加负号表示逆排序,没有设定时 通常点击那个字段就可以进行正逆排序
+    # ordering = ['']
 
     actions = [export_csv, ]
 
@@ -201,3 +207,6 @@ admin.site.register(ImportPetProfile, ImportPetProfileAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 # admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.site_header = "不知宠物医院管理平台"
+admin.site.site_title = "不知宠物医院管理平台"
+admin.site.index_title = "欢迎进入不知宠物医院管理平台"

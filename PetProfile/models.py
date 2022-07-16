@@ -1,6 +1,6 @@
 from django.db import models
 # 导入django自带的用户表作为外键
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
 
 # Create your models here.
 
@@ -18,7 +18,7 @@ HANDLE_TYPES = (
 class PetProfile(models.Model):
     # 字段加上null=True, blank=True时就可以创建一个链接user的空对象
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    user_telephone = models.CharField(max_length=50, blank=True, verbose_name='联系方式', null=True)
+    user_telephone = models.CharField(max_length=50, blank=True, verbose_name='用户联系方式', null=True)
     # user_id = models.CharField(max_length=18,blank=True,null=True,verbose_name="用户身份证")
 
     pet_name = models.CharField(max_length=50, null=True, blank=True, verbose_name='宠物姓名')
@@ -59,5 +59,5 @@ class ImportPetProfile(models.Model):
     handle_text = models.TextField(verbose_name='处理信息', null=True, blank=True)
 
     class Meta:
-        verbose_name = '批量导入Pet信息'
+        verbose_name = '批量导入PetProfile信息'
         verbose_name_plural = verbose_name

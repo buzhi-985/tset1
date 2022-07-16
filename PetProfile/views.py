@@ -50,6 +50,8 @@ def profile_update(request):
 
     return render(request, 'account/profile_update.html', {'form': form, 'user': user})
 
+def bb(request):
+    return render(request,'account/nav.html')
 
 class CustomPasswordResetView(PasswordResetView):
 

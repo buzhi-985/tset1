@@ -1,0 +1,16 @@
+{% extends 'account/base.html' %}
+{% block content %}
+    <p>Welcome, {{ user.username }}.</p>
+    <br>
+    <h2>My PetProfile</h2>
+
+    <ul>
+        <li>Pet_name: {{ user.profile.pet_name }} </li>
+        <li>Pet_gender: {{ user.profile.pet_gender }} </li>
+        <li>Pet_age: {{ user.profile.pet_age }} </li>
+        <li>Pet_breed: {{ user.profile.pet_breed }} </li>
+        <li>Pet_id: {{ user.profile.pet_id }} </li>
+        <li>User_telephone: {{ user.profile.user_telephone }} </li>
+    </ul>
+
+{% endblock %}

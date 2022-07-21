@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 import os
 from pathlib import Path
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 
 
@@ -56,7 +55,9 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         # 'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-        'rest_framework.permissions.DjangoModelPermissions'
+        # 员工才可查看，添加两个鉴权时需要同时满足
+        'rest_framework.permissions.IsAdminUser',
+        # 'ClerkProfile.views.ClerkPermission'
     ]
 }
 

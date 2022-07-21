@@ -105,6 +105,7 @@ DATABASES = {
         'USER': 'root',  # 用户名
         'PASSWORD': 'root',  # 密码
         'HOST': 'localhost',  # 访问的地址（localhost|127.0.0.1|''） 都代表本机
+        # 'HOST': 'db',  # 服务器上填写docker db容器的名字
         'PORT': '3306',  # 端口号 mysql默认端口是3306
         'OPTIONS': {'charset': 'utf8mb4'},
     }

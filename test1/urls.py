@@ -22,8 +22,6 @@ import PetProfile.views
 from rest_framework import routers, serializers, viewsets
 
 
-
-
 # Serializers define the API representation.
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
@@ -65,4 +63,5 @@ urlpatterns = [
     # 暴露api
     path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
+    path('', include('yuqing.urls'))
 ]

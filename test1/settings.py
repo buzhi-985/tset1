@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-64azrxb^=g@i+(@($!9*jb9)%nca8v!rto^d(e**d_-rn298u5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'ClerkProfile',
     'rest_framework',
+    'yuqing',
 
 
 ]
@@ -154,7 +155,7 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = 'yuqing/static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

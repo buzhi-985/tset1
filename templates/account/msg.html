@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body onload="bindBtn1Event()">
+<h1>零零零零</h1>
+<input id="btn1" type="button" class="btn btn-primary" value="微博爬取"/>
+<script type="text/javascript">
+    /**
+     * 获取当前窗口的参数
+     * key,参数的名称
+     */
+    function bindBtn1Event() {
+        uurl = window.location.href;
+        alert(uurl);
+        var url = decodeURI(uurl);
+        var paramMap = {};
+        var firstIndex = url.indexOf("?");
+        var paramStr = url.substring(firstIndex + 1);
+        if (paramStr && paramStr !== "") {
+            var index = paramStr.indexOf("?") //再次检查参数，避免后面有参数的值是访问地址
+            var lastVal = "";
+            var sflag = false; //标识有第二个问号
+            if (index > 0) {
+                var urlTemp = paramStr.substring(0, index);
+                var lastIndex = urlTemp.lastIndexOf("=");
+                lastVal = paramStr.substring(lastIndex + 1);
+                paramStr = paramStr.substring(0, lastIndex + 1);
+            }
+            var paramStrArr = paramStr.split("&");
+            for (var i = 0; i < paramStrArr.length; i++) {
+                var temp = paramStrArr[i];
+                var indexE = temp.indexOf("=");
+                var pKey = temp.substring(0, indexE);
+                var pVal = "";
+                if (sflag && i === (paramStrArr.length - 1)) {
+                    pVal = lastVal;
+                } else {
+                    pVal = temp.substring(indexE + 1);
+                }
+                paramMap[pKey] = pVal;
+            }
+        }
+        alert(paramMap[pKey]);
+
+        $("#btn1").click(function () {
+            alert("正在获取数据中，请十分钟后再查看数据");
+        })
+    }
+</script>
+</body>
+</html>

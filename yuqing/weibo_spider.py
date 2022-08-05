@@ -9,6 +9,7 @@ import pickle
 from .models import *
 
 url = 'https://m.weibo.cn/p/index?containerid=100808165ef5c505a4b4f59142bc0a0f0aafae&luicode=10000011&lfid=100103type%3D1%26q%3D%E4%BD%9B%E5%B1%B1%E7%A7%91%E5%AD%A6%E6%8A%80%E6%9C%AF%E5%AD%A6%E9%99%A2'
+
 # chrrome版本大于88
 opt = Options()
 opt.add_argument("--disable-blink-features=AutomationControlled")
@@ -101,7 +102,23 @@ def insert_sec(user, reply, fir_id):
         context=reply
     ).pk
 
-
+def getemojy(elem, xpath, istest=False):
+    """
+    实现判断元素是否存在
+    :param elem: 浏览器对象
+    :param xpath: xpath表达式
+    :param istest: 如果为True,如果元素存在返回内容将为元素文本内容
+    :return: 是否存在
+    """
+    try:
+        target = elem.find_element_by_xpath(xpath)
+    except exceptions.NoSuchElementException:
+        print("没找到")
+        return False
+    else:
+        if istest:
+            return target.get_attribute('alt')
+        return True
 # 获取评论
 def get_comments(driver, elem, num, art_id):
     try:
@@ -122,10 +139,12 @@ def get_comments(driver, elem, num, art_id):
             print("进入评论区了")
             for pinlun in pinluns:
                 user = pinlun.find_element_by_css_selector('h4').text
-                comment = pinlun.find_element_by_css_selector('h3').text
+                pp = pinlun.find_element_by_css_selector('h3') # 评论
                 # 获取到评论先根据帖子ID 写进第二张表，然后返回第二张表的ID
                 # 获取到评论的回复之后再进行切割。获取第二张表的ID绑定 写入第三张表
                 comment_reply = iselement(pinlun, 'div.cmt-sub-txt', True)
+                emojoy = iselement(pp, 'span[1]/img', True) # 获取表情
+                comment = pp.text+emojoy
                 print("评论回复的值是{}".format(str(comment_reply)))
                 if comment_reply:
                     comment_reply = comment_reply.split(':')
@@ -290,7 +309,7 @@ def get_code():
     # 超过50秒获取不到就退出循环
     while code == '':
         # print(i)
-        code = requests.get('http://106.53.108.157:8000/msg/get/').text
+        code = requests.get('http://vhost43469.80.vrvr.cn/mget.php').text
         # print(type(code))
         # print(code)
         i += 1
@@ -300,53 +319,66 @@ def get_code():
     print(code)
     return code
 
+def code_login(driver, username, password):
+    # 加载驱动，使用浏览器打开指定网址
+    # driver.set_window_size(452, 790)
+    # driver.get('https://m.weibo.cn')
+
+    driver.get("https://passport.weibo.cn/signin/login")
+    print("开始自动登陆，若出现验证码手动验证")
+    time.sleep(3)
+
+    elem = driver.find_element_by_xpath("//*[@id='loginName']")
+    elem.send_keys(username)
+    elem = driver.find_element_by_xpath("//*[@id='loginPassword']")
+    elem.send_keys(password)
+    elem = driver.find_element_by_xpath("//*[@id='loginAction']")
+    elem.send_keys(Keys.ENTER)
+    # print("暂停20秒，用于验证码验证")
+    time.sleep(2)
+
+    # 点击激活
+    driver.find_element_by_xpath('//*[@id="protectGuide"]/div/div/div[3]/a').click()
+    time.sleep(3)
+    driver.find_element_by_xpath('//*[@id="vdVerify"]/div[1]/div/div/div[3]/a').click()
+    time.sleep(3)
+    driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[2]/div/div/div/span[1]/input').send_keys(
+        get_code())
+    # 点击登录
+    driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[3]/a').click()
+    # 保存cookies
+    time.sleep(3)
+    # saveCookie('selenium', cookies_file, driver)
+    print("cookie保存成功")
+    # return "登陆成功"
 
 def login(driver, username, password, cookies_file):
     # 如果存在cookies，默认用selenium自身保存的cookies
     if os.path.exists(cookies_file):
-        sz = os.path.getsize(cookies_file)
+        # sz = os.path.getsize(cookies_file)
+        # print(sz)
+        # with open('cookie.txt','r') as f:
+        with open(cookies_file,'r') as f:
+            str = f.read().strip()
         # 若为空文件不执行设置cookies
-        if not sz:
-            print(cookies_file, " is empty!")
-            return "cookies文件为空"
+        if str == "":
+            print(cookies_file, " is empty!启用短信登录")
+            code_login(driver,username, password)
+            print("cookies文件为空")
         else:
             driver.get(url)
             time.sleep(3)
-            useCookie('selenium', cookies_file, driver)
+            useCookie('brower', cookies_file, driver)
             driver.refresh()
-            time.sleep(4)
-    else:
-        # 加载驱动，使用浏览器打开指定网址
-        # driver.set_window_size(452, 790)
-        # driver.get('https://m.weibo.cn')
+            time.sleep(2)
+            # print(driver.get_cookie('MLOGIN')['value'])
+            # print(type(driver.get_cookie('MLOGIN')['value']))
+            # cookie失效验证
+            if driver.get_cookie('MLOGIN')['value']=='0':
+                print("cookie失效，启用短信登录")
+                code_login(driver, username, password)
+            time.sleep(2)
 
-        driver.get("https://passport.weibo.cn/signin/login")
-        print("开始自动登陆，若出现验证码手动验证")
-        time.sleep(3)
-
-        elem = driver.find_element_by_xpath("//*[@id='loginName']")
-        elem.send_keys(username)
-        elem = driver.find_element_by_xpath("//*[@id='loginPassword']")
-        elem.send_keys(password)
-        elem = driver.find_element_by_xpath("//*[@id='loginAction']")
-        elem.send_keys(Keys.ENTER)
-        # print("暂停20秒，用于验证码验证")
-        time.sleep(2)
-
-        # 点击激活
-        driver.find_element_by_xpath('//*[@id="protectGuide"]/div/div/div[3]/a').click()
-        time.sleep(3)
-        driver.find_element_by_xpath('//*[@id="vdVerify"]/div[1]/div/div/div[3]/a').click()
-        time.sleep(3)
-        driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[2]/div/div/div/span[1]/input').send_keys(
-            get_code())
-        # 点击登录
-        driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[3]/a').click()
-        # 保存cookies
-        time.sleep(3)
-        saveCookie('selenium', cookies_file, driver)
-        print("cookie保存成功")
-        return "登陆成功"
 
 
 def spider(driver):

@@ -8,4 +8,5 @@ urlpatterns = [
     path("msg", views.msg),
     path("msg/get/", views.msg_get),
     path("wei/ajax/", views.weiaj),
+    path('wei/anly/',views.word_anlaies)
 ]

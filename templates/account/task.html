@@ -2,18 +2,49 @@
 {% load static %}
 {% block content %}
     {#        <h1>Ajax学习</h1>#}
-    <h3>示例1</h3>
-    <input id="btn1" type="button" class="btn btn-primary" value="微博爬取"/>
+    <p>
+    自动登录直接点击抓取，若自动登录抓取失败，可以先提交CK再抓取
+    </p>
+    <br>
+    <div>
+        <form class="login" method="POST" >
+          {% csrf_token %}
+            <textarea id="ck" name="ck" class="w-1/2 h-32 border-4 rounded-md  focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent" >请输入从浏览器抓的CK：</textarea>
+
+        <button id="btn" value="提交" class="primaryAction rounded-md bg-purple-300 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50" type="submit">提交</button>
+        </form>
+    </div>
+    <br>
+ <button id="btn1" type="button" class="rounded-md bg-purple-300 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-opacity-50">微博爬取</button>
 {% endblock %}
 {% block js %}
     <script src={% static '/jquery-3.6.0.js' %}></script>
     <script type="text/javascript">
+
+        var oTxt = document.getElementById('ck');
+
         $(function () {
-            // 页面框架加载完成之后代码自动执行
+            // 页面框架加载完成之后代码自动绑定
             bindBtn1Event();
+            btn();
+         })
+        function btn() {
+            $("#btn").click(function (){
+                isnull(oTxt.value);
+            })
+        }
+        function isnull(val) {
 
-        })
+        var str = val.replace(/(^\s*)|(\s*$)/g, '');//去除空格;
 
+        if (str === '' || str === undefined || str == null || str==="请输入从浏览器抓的CK：") {
+            //return true;
+                alert("你还没有输入CK呢");
+        } else {
+            //return false;
+                alert("提交成功");
+        }
+    }
         function bindBtn1Event() {
             //将事件绑定到按钮上
             $("#btn1").click(function () {

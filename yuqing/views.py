@@ -11,7 +11,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore
 import warnings
 import dateparser
-
 # Ignore dateparser warnings regarding pytz
 warnings.filterwarnings(
     "ignore",

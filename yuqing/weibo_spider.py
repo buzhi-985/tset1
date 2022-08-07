@@ -141,8 +141,6 @@ def iselement(elem, css_sel, istest=False):
 # 获取评论
 def get_comments(driver, elem, num, art_id):
     try:
-
-
         # time.sleep(2)
         # # 解决评论被屏蔽
         # driver.refresh()
@@ -372,6 +370,8 @@ def code_login(driver, username, password,cookies_file):
     driver.find_element_by_xpath('//*[@id="protectGuide"]/div/div/div[3]/a').click()
     time.sleep(3)
     driver.find_element_by_xpath('//*[@id="vdVerify"]/div[1]/div/div/div[3]/a').click()
+    # 先获取一次验证码接口，清除可能存在的旧验证码
+    code = requests.get('http://vhost43469.80.vrvr.cn/mget.php').text
     time.sleep(3)
     driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[2]/div/div/div/span[1]/input').send_keys(
         get_code())

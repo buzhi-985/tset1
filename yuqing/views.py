@@ -19,7 +19,7 @@ warnings.filterwarnings(
 # 实例化调度器
 scheduler = BackgroundScheduler()
 # 调度器使用默认的DjangoJobStore()
-scheduler.add_jobstore(DjangoJobStore(), 'default')
+scheduler.add_jobstore(DjangoJobStore())
 
 
 # 注册定时任务并开始
@@ -31,11 +31,11 @@ def test1():
 
 
 # try:
-#     scheduler.add_job(test1, 'interval',seconds=, timezone='Asia/Shanghai', id="微博", args=())
+#     scheduler.add_job(test1, 'interval',minutes=30, timezone='Asia/Shanghai', id="微博", args=())
 #     scheduler.start()
 # except:
 #     pass
-# scheduler.pause()
+# scheduler.remove_job("微博")
 
 def wei(request):
     if request.method == "POST":

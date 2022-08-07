@@ -461,6 +461,10 @@ def spider(driver, num):
         queryset = weibo.objects.filter(username=user_name, article=weibo_content).first()
         if queryset:
             if queryset.comment_num == int(comments):
+                # 当评论无更新要记得返回
+                botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
+                driver.execute_script(botton)
+                time.sleep(2)
                 pass
             else:
                 get_comments(driver, elem, int(comments), queryset.pk)

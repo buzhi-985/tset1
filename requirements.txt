@@ -14,3 +14,4 @@ requests==2.25.1
 selenium==3.14.1
 django_apscheduler==0.6.0
 jieba==0.41
+wordcloud==1.8.2.2

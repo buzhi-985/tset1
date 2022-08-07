@@ -1,0 +1,55 @@
+
+version: "3"
+services:
+  app:
+    restart: always
+    build: .
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    volumes:
+      - .:/code
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - chrome
+    networks:
+      - db_network
+  db:
+    image: mysql:5.7
+    volumes:
+      - "./mysql:/var/lib/mysql"
+    ports:
+      - "3306:3306"
+    restart: always
+    command : "mysqld --user=root --explicit_defaults_for_timestamp --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=test1
+      - TZ=Asia/Shanghai
+    networks:
+      - db_network
+  chrome:
+    image: selenium/node-chrome:4.3.0-20220726
+    shm_size: 2gb
+    depends_on:
+      - selenium-hub
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    networks:
+      - db_network
+
+  selenium-hub:
+    image: selenium/hub:4.3.0-20220726
+    container_name: selenium-hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+    networks:
+      - db_network
+networks:
+  db_network:
+    driver: bridge
+

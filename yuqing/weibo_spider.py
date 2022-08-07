@@ -43,28 +43,26 @@ def get_all_text(driver, elem):
         weibo_content = elem.find_elements_by_css_selector('div.weibo-text')[0].text
     return weibo_content
 
-
+'''
 def iselement(elem, css_sel, istest=False):
     """
     实现判断元素是否存在
     :param elem: 浏览器对象
     :param css_sel: css_selector表达式
     :param istest: 如果为True,如果元素存在返回内容将为元素文本内容
-    :return: 是否存在
     """
     try:
         target = elem.find_elements_by_css_selector(css_sel)
     except exceptions.NoSuchElementException:
-        return False
+        return ''
     else:
         if istest:
             text = ""
             for i in range(len(target)):
                 text += target[i].text
             return text
-        return True
-
-
+        return ''
+'''
 def insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text):
     weibo.objects.create(
         username=user_name,
@@ -102,32 +100,55 @@ def insert_sec(user, reply, fir_id):
         context=reply
     ).pk
 
+
 def getemojy(elem, xpath, istest=False):
     """
     实现判断元素是否存在
     :param elem: 浏览器对象
     :param xpath: xpath表达式
     :param istest: 如果为True,如果元素存在返回内容将为元素文本内容
-    :return: 是否存在
     """
     try:
         target = elem.find_element_by_xpath(xpath)
     except exceptions.NoSuchElementException:
-        print("没找到")
-        return False
+        print("表情没找到")
+        return ''
     else:
         if istest:
             return target.get_attribute('alt')
-        return True
+
+def iselement(elem, css_sel, istest=False):
+    """
+    实现判断元素是否存在
+    :param elem: 浏览器对象
+    :param css_sel: css_selector表达式
+    :param istest: 如果为True,如果元素存在返回内容将为元素对象
+    """
+    try:
+        target = elem.find_element_by_css_selector(css_sel)
+    except exceptions.NoSuchElementException:
+        return ''
+        pass
+    else:
+        if istest:
+            print("获取到多条回复")
+            return target
+        else:
+            return ''
+
 # 获取评论
 def get_comments(driver, elem, num, art_id):
     try:
-        # print("获取评论")
+        print("获取评论")
         elem.find_elements_by_css_selector('i.m-font.m-font-comment')[0].click()
         # https://m.weibo.cn/detail/4761425735847382
         print("点击了")
-        time.sleep(4)
-        # 根据评论数进行滑动并再获取0
+
+        time.sleep(2)
+        # 解决评论被屏蔽
+        driver.refresh()
+        time.sleep(3)
+        # # 根据评论数进行滑动并再获取0
         for i in range(int(num / 20)):
             scrob(driver)
         # 页面跳转
@@ -136,37 +157,48 @@ def get_comments(driver, elem, num, art_id):
         # print(pinluns_qu)
         pinluns = pinluns_qu[0].find_elements_by_css_selector('div.m-text-box')  # 获取每个评论
         try:
+            i=0
             print("进入评论区了")
             for pinlun in pinluns:
                 user = pinlun.find_element_by_css_selector('h4').text
-                pp = pinlun.find_element_by_css_selector('h3') # 评论
+                pp = pinlun.find_element_by_css_selector('h3')  # 评论
                 # 获取到评论先根据帖子ID 写进第二张表，然后返回第二张表的ID
                 # 获取到评论的回复之后再进行切割。获取第二张表的ID绑定 写入第三张表
-                comment_reply = iselement(pinlun, 'div.cmt-sub-txt', True)
-                emojoy = iselement(pp, 'span[1]/img', True) # 获取表情
-                comment = pp.text+emojoy
-                print("评论回复的值是{}".format(str(comment_reply)))
-                if comment_reply:
-                    comment_reply = comment_reply.split(':')
-                    # 写入第三张表
-                    reply = ""
-                    print(comment_reply)
-                    for i in range(1, len(comment_reply)):
-                        reply += comment_reply[i]
-                else:
-                    reply=''
-                # 去重
+
+                emojoy = getemojy(pp, 'span[1]/img', True)  # 获取表情
+                comment = pp.text + emojoy
+                # 评论去重
                 if FirstComment.objects.filter(username=user, context=comment):
-                    if comment_reply:
-                        # 更新评论的回复
-                        queryset = SecondComment.objects.filter(username=comment_reply[0]).first()
-                        queryset.context = reply
-                        print("以更新评论{}的回复".format(comment))
+                    first_id = FirstComment.objects.filter(username=user, context=comment).first().pk
+                    pass
                 else:
                     first_id = insert_first(user, comment, art_id)
-                    if comment_reply:
-                        insert_sec(comment_reply[0], reply, first_id)
-                    print("用户：{}，评论：{},评论的回复：{}".format(user, comment, comment_reply))
+                # 获取评论回复
+                comment_reply = iselement(pinlun, 'div.cmt-sub-txt', True) #返回一个对象
+                if comment_reply:
+                    # 找得到无法点击，因为不在屏幕上，要滑动窗口，那么如何自己判断呢？使用js
+                    # 那如果出现多个怎么办？先拿到全部的个数再进行i计数，dao
+                    botton = 'document.getElementsByClassName("cmt-sub-txt")[%d].click();' % i
+                    driver.execute_script(botton)
+                    # driver.execute_script("window.scrollBy(0,document.body.scrollHeight/5)", "")
+                    # time.sleep(2)
+                    # comment_reply.click()
+                    rply = driver.find_elements_by_css_selector('div.card.m-avatar-box.lite-page-list.list-bg')
+                    print("评论回复有%d条：如下" % len(rply))
+                    for rp in rply:
+                        rply_user = rp.find_element_by_css_selector('h4').text
+                        rply_cont = rp.find_element_by_css_selector('h3').text
+                        print(rply_user, rply_cont)
+                        # 评论回复去重
+                        queryset = SecondComment.objects.filter(username=rply_user, context=rply_cont).first()
+                        if queryset:
+                            pass
+                        else:
+                            insert_sec(rply_user, rply_cont, first_id)
+                    i += 1
+                    botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
+                    driver.execute_script(botton)
+                    time.sleep(2)
         except Exception as e:
             print(e)
             pass
@@ -174,7 +206,6 @@ def get_comments(driver, elem, num, art_id):
         btn = driver.find_element_by_css_selector("i.m-font.m-font-arrow-left")
         btn.click()
         time.sleep(3)
-
 
     except:
         pass
@@ -319,7 +350,8 @@ def get_code():
     print(code)
     return code
 
-def code_login(driver, username, password):
+
+def code_login(driver, username, password,cookies_file):
     # 加载驱动，使用浏览器打开指定网址
     # driver.set_window_size(452, 790)
     # driver.get('https://m.weibo.cn')
@@ -348,9 +380,10 @@ def code_login(driver, username, password):
     driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[3]/a').click()
     # 保存cookies
     time.sleep(3)
-    # saveCookie('selenium', cookies_file, driver)
+    saveCookie('selenium', cookies_file, driver)
     print("cookie保存成功")
     # return "登陆成功"
+
 
 def login(driver, username, password, cookies_file):
     # 如果存在cookies，默认用selenium自身保存的cookies
@@ -358,45 +391,41 @@ def login(driver, username, password, cookies_file):
         # sz = os.path.getsize(cookies_file)
         # print(sz)
         # with open('cookie.txt','r') as f:
-        with open(cookies_file,'r') as f:
+        with open(cookies_file, 'r') as f:
             str = f.read().strip()
         # 若为空文件不执行设置cookies
         if str == "":
             print(cookies_file, " is empty!启用短信登录")
-            code_login(driver,username, password)
+            code_login(driver, username, password,cookies_file)
             print("cookies文件为空")
         else:
             driver.get(url)
             time.sleep(3)
-            useCookie('brower', cookies_file, driver)
+            useCookie('selenium', cookies_file, driver)
             driver.refresh()
             time.sleep(2)
             # print(driver.get_cookie('MLOGIN')['value'])
             # print(type(driver.get_cookie('MLOGIN')['value']))
             # cookie失效验证
-            if driver.get_cookie('MLOGIN')['value']=='0':
+            if driver.get_cookie('MLOGIN')['value'] == '0':
                 print("cookie失效，启用短信登录")
-                code_login(driver, username, password)
+                code_login(driver, username, password,cookies_file)
             time.sleep(2)
 
 
-
-def spider(driver):
+def spider(driver, num):
     driver.get(url)
     # 每页10个
-    # for i in range(5):
-    #     scrob()
-    # # 先刷到100条再进行抓取，妈的直接失效
-    # time.sleep(2)
-    # elems = driver.find_elements_by_css_selector('div.card.m-panel.card9')
-    # print(len(elems))
     # 先抓全文，用户等，再根据是否有评论再去抓评论
-    for i in range(0, 10):
+    for i in range(0, num):
         # 在里面加srcb就会进不了评论区
         print("次数：" + str(i))
         if (i % 10) == 0:
-            scrob(driver)
-            time.sleep(3)
+            if i ==0:
+                pass
+            else:
+                scrob(driver)
+        time.sleep(3)
         elem = driver.find_elements_by_css_selector('div.card.m-panel.card9')[i]
         # 获取时间
         tim = elem.find_element_by_css_selector("span.time").text
@@ -421,19 +450,21 @@ def spider(driver):
         # print(comments)
         if comments == '评论':
             comments = '0'
+        print("用户名：{}，内容：{}，点赞：{}，评论：{}，转发：{}".format(user_name, weibo_content, likes, comments, shares))
         # 先写入第一张表，返回一个ID，传给评论获取
         # 去重：
-        if weibo.objects.filter(username=user_name, article=weibo_content):
-            queryset = weibo.objects.filter(username=user_name, article=weibo_content).first()
+        queryset = weibo.objects.filter(username=user_name, article=weibo_content).first()
+        if queryset:
             if queryset.comment_num == int(comments):
                 pass
             else:
                 get_comments(driver, elem, int(comments), queryset.pk)
         else:
             art_id = insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text)
+            print("已写入文章")
             if comments != '0':
                 get_comments(driver, elem, int(comments), art_id)
-        print("用户名：{}，内容：{}，点赞：{}，评论：{}，转发：{}".format(user_name,weibo_content,likes,comments,shares))
+
 
 
 def run():
@@ -446,7 +477,7 @@ def run():
     # username = '19304914193'
     # password = '123456buzhi'
     login(driver, username, password, 'cookie.txt')
-    spider(driver)
+    spider(driver, 10)
     # driver.quit()
 
 

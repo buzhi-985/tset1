@@ -11,6 +11,8 @@ class weibo(models.Model):
     transmit_num = models.IntegerField(verbose_name='转发数')
     c_time = models.CharField(max_length=50, verbose_name='最后回复时间')
     pic_links = models.CharField(max_length=500, verbose_name='图片链接', null=True, blank=True)
+    art_links = models.CharField(max_length=200, verbose_name='文章链接', null=True, blank=True)
+
 
 
     class Meta:
@@ -25,7 +27,7 @@ class weibo(models.Model):
 class FirstComment(models.Model):
     username = models.CharField(max_length=30, verbose_name='用户名')
     context = models.CharField(max_length=500, verbose_name='评论内容')
-    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='firstcomment')
+    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='firstcomment',verbose_name="文章")
 
     class Meta:
         verbose_name = '评论'
@@ -37,7 +39,7 @@ class FirstComment(models.Model):
 class SecondComment(models.Model):
     username = models.CharField(max_length=30, verbose_name='用户名')
     context = models.CharField(max_length=500, verbose_name='评论回复内容')
-    com = models.ForeignKey('FirstComment', on_delete=models.CASCADE, related_name='secondcomment')
+    com = models.ForeignKey('FirstComment', on_delete=models.CASCADE, related_name='secondcomment',verbose_name="评论")
 
     class Meta:
         verbose_name='评论的回复'

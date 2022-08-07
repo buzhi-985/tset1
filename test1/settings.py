@@ -26,9 +26,8 @@ SECRET_KEY = 'django-insecure-64azrxb^=g@i+(@($!9*jb9)%nca8v!rto^d(e**d_-rn298u5
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 # Application definition
-
 INSTALLED_APPS = [
     'simpleui',
     'django.contrib.admin',
@@ -40,6 +39,7 @@ INSTALLED_APPS = [
     'PetProfile',
     # allauth依赖sites
     'django.contrib.sites',
+    'django_apscheduler',
     # 导入allauth
     'allauth',
     'allauth.account',

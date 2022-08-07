@@ -25,7 +25,7 @@ class weiboAdmin(admin.ModelAdmin):
 
 
 class FirstCommentAdmin(admin.ModelAdmin):
-    list_display = ['username', 'context']
+    list_display = ['username', 'context','art']
     inlines = [SecondCommentInline]
 
 class SecondCommentAdmin(admin.ModelAdmin):

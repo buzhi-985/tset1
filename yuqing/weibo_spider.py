@@ -63,7 +63,7 @@ def iselement(elem, css_sel, istest=False):
             return text
         return ''
 '''
-def insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text):
+def insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text,art_links):
     weibo.objects.create(
         username=user_name,
         article=weibo_content,
@@ -72,6 +72,7 @@ def insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_t
         transmit_num=int(shares),
         c_time=tim,
         pic_links=links_text,
+        art_links=art_links
     )
     pk = weibo.objects.get(username=user_name, article=weibo_content).pk
     return pk
@@ -139,14 +140,11 @@ def iselement(elem, css_sel, istest=False):
 # 获取评论
 def get_comments(driver, elem, num, art_id):
     try:
-        print("获取评论")
-        elem.find_elements_by_css_selector('i.m-font.m-font-comment')[0].click()
-        # https://m.weibo.cn/detail/4761425735847382
-        print("点击了")
 
-        time.sleep(2)
-        # 解决评论被屏蔽
-        driver.refresh()
+
+        # time.sleep(2)
+        # # 解决评论被屏蔽
+        # driver.refresh()
         time.sleep(3)
         # # 根据评论数进行滑动并再获取0
         for i in range(int(num / 20)):
@@ -450,6 +448,12 @@ def spider(driver, num):
         # print(comments)
         if comments == '评论':
             comments = '0'
+        # 获取文章链接并进入评论区
+        elem.find_elements_by_css_selector('div.weibo-text')[0].click()
+        time.sleep(2)
+        driver.refresh()
+        current_url = driver.current_url
+        print(driver.current_url)
         print("用户名：{}，内容：{}，点赞：{}，评论：{}，转发：{}".format(user_name, weibo_content, likes, comments, shares))
         # 先写入第一张表，返回一个ID，传给评论获取
         # 去重：
@@ -460,10 +464,10 @@ def spider(driver, num):
             else:
                 get_comments(driver, elem, int(comments), queryset.pk)
         else:
-            art_id = insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text)
+            art_id = insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text,current_url)
             print("已写入文章")
-            if comments != '0':
-                get_comments(driver, elem, int(comments), art_id)
+
+            get_comments(driver, elem, int(comments), art_id)
 
 
 

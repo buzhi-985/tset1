@@ -40,10 +40,14 @@ class SecondComment(models.Model):
     username = models.CharField(max_length=30, verbose_name='用户名')
     context = models.CharField(max_length=500, verbose_name='评论回复内容')
     com = models.ForeignKey('FirstComment', on_delete=models.CASCADE, related_name='secondcomment',verbose_name="评论")
+    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='secondcomment',verbose_name="评论")
 
     class Meta:
         verbose_name='评论的回复'
         verbose_name_plural = verbose_name
+
+    def __str__(self):
+        return "{}".format("".join(self.context))
 
 
 """获取方法

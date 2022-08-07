@@ -90,11 +90,12 @@ def insert_first(user, comment, art_id):
     ).pk
 
 
-def insert_sec(user, reply, fir_id):
+def insert_sec(user, reply, fir_id,art_id):
     SecondComment.objects.create(
         username=user,
         context=reply,
         com_id=fir_id,
+        art_id=art_id
     )
     return SecondComment.objects.get(
         username=user,
@@ -192,7 +193,7 @@ def get_comments(driver, elem, num, art_id):
                         if queryset:
                             pass
                         else:
-                            insert_sec(rply_user, rply_cont, first_id)
+                            insert_sec(rply_user, rply_cont, first_id,art_id)
                     i += 1
                     botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
                     driver.execute_script(botton)

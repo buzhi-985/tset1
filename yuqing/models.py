@@ -13,8 +13,6 @@ class weibo(models.Model):
     pic_links = models.CharField(max_length=500, verbose_name='图片链接', null=True, blank=True)
     art_links = models.CharField(max_length=200, verbose_name='文章链接', null=True, blank=True)
 
-
-
     class Meta:
         verbose_name = '微博帖子'
         verbose_name_plural = verbose_name
@@ -23,31 +21,31 @@ class weibo(models.Model):
         return "{}".format(self.article)
 
 
-
 class FirstComment(models.Model):
     username = models.CharField(max_length=30, verbose_name='用户名')
     context = models.CharField(max_length=500, verbose_name='评论内容')
-    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='firstcomment',verbose_name="文章")
+    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='firstcomment', verbose_name="文章")
 
     class Meta:
         verbose_name = '评论'
         verbose_name_plural = verbose_name
+
     def __str__(self):
-        return "{}".format("".join(self.context))
+        return "{}{}".format(self.username, self.context)
 
 
 class SecondComment(models.Model):
     username = models.CharField(max_length=30, verbose_name='用户名')
     context = models.CharField(max_length=500, verbose_name='评论回复内容')
-    com = models.ForeignKey('FirstComment', on_delete=models.CASCADE, related_name='secondcomment',verbose_name="评论")
-    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='secondcomment',verbose_name="评论")
+    com = models.ForeignKey('FirstComment', on_delete=models.CASCADE, related_name='secondcomment', verbose_name="评论")
+    art = models.ForeignKey('weibo', on_delete=models.CASCADE, related_name='secondcomment', verbose_name="评论")
 
     class Meta:
-        verbose_name='评论的回复'
+        verbose_name = '评论的回复'
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return "{}".format("".join(self.context))
+        return "{}{}".format(self.username, self.context)
 
 
 """获取方法

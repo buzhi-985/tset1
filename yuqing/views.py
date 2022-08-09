@@ -10,7 +10,6 @@ from wordcloud import WordCloud
 from apscheduler.schedulers.background import BackgroundScheduler
 from django_apscheduler.jobstores import DjangoJobStore
 import warnings
-import dateparser
 # Ignore dateparser warnings regarding pytz
 warnings.filterwarnings(
     "ignore",
@@ -31,8 +30,9 @@ def test1():
 
 
 # try:
-#     scheduler.add_job(test1, 'interval',minutes=30, timezone='Asia/Shanghai', id="微博", args=())
-#     scheduler.start()
+#     scheduler.add_job(test1, 'interval', hours=1, max_instances=1, timezone='Asia/Shanghai', replace_existing=True, id="微博",
+#                       args=())
+#     print("定时任务正在设置")
 # except:
 #     pass
 # scheduler.remove_job("微博")
@@ -44,6 +44,8 @@ def wei(request):
             pass
         else:
             # print(str)
+            # with open('yuqing/cookie.txt','w') as f:
+            #     f.write(request.POST['ck'])
             with open('cookie.txt', 'w') as f:
                 f.write(request.POST['ck'])
     return render(request, 'account/task.html')

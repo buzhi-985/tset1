@@ -6,17 +6,15 @@ from selenium.webdriver.common.keys import Keys
 from selenium.common import exceptions
 import requests
 import pickle
+from selenium.webdriver.support import expected_conditions as expected
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.wait import WebDriverWait
+
 from .models import *
 
 url = 'https://m.weibo.cn/p/index?containerid=100808165ef5c505a4b4f59142bc0a0f0aafae&luicode=10000011&lfid=100103type%3D1%26q%3D%E4%BD%9B%E5%B1%B1%E7%A7%91%E5%AD%A6%E6%8A%80%E6%9C%AF%E5%AD%A6%E9%99%A2'
 
-# chrrome版本大于88
-opt = Options()
-opt.add_argument("--disable-blink-features=AutomationControlled")
-opt.add_argument("--disable-gpu")
 
-
-# opt.add_argument('--headless')
 
 
 # 控制页面滑动
@@ -43,26 +41,7 @@ def get_all_text(driver, elem):
         weibo_content = elem.find_elements_by_css_selector('div.weibo-text')[0].text
     return weibo_content
 
-'''
-def iselement(elem, css_sel, istest=False):
-    """
-    实现判断元素是否存在
-    :param elem: 浏览器对象
-    :param css_sel: css_selector表达式
-    :param istest: 如果为True,如果元素存在返回内容将为元素文本内容
-    """
-    try:
-        target = elem.find_elements_by_css_selector(css_sel)
-    except exceptions.NoSuchElementException:
-        return ''
-    else:
-        if istest:
-            text = ""
-            for i in range(len(target)):
-                text += target[i].text
-            return text
-        return ''
-'''
+
 def insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text,art_links):
     weibo.objects.create(
         username=user_name,
@@ -133,7 +112,7 @@ def iselement(elem, css_sel, istest=False):
         pass
     else:
         if istest:
-            print("获取到多条回复")
+            # print("获取到多条回复")
             return target
         else:
             return ''
@@ -193,6 +172,7 @@ def get_comments(driver, elem, num, art_id):
                         else:
                             insert_sec(rply_user, rply_cont, first_id,art_id)
                     i += 1
+                    time.sleep(1)
                     botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
                     driver.execute_script(botton)
                     time.sleep(2)
@@ -367,16 +347,16 @@ def code_login(driver, username, password,cookies_file):
     time.sleep(2)
 
     # 点击激活
-    driver.find_element_by_xpath('//*[@id="protectGuide"]/div/div/div[3]/a').click()
-    time.sleep(3)
-    driver.find_element_by_xpath('//*[@id="vdVerify"]/div[1]/div/div/div[3]/a').click()
+    # driver.find_element_by_xpath('//*[@id="protectGuide"]/div/div/div[3]/a').click()
+    # time.sleep(3)
+    # driver.find_element_by_xpath('//*[@id="vdVerify"]/div[1]/div/div/div[3]/a').click()
     # 先获取一次验证码接口，清除可能存在的旧验证码
     code = requests.get('http://vhost43469.80.vrvr.cn/mget.php').text
-    time.sleep(3)
-    driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[2]/div/div/div/span[1]/input').send_keys(
-        get_code())
-    # 点击登录
-    driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[3]/a').click()
+    time.sleep(20)
+    # driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[2]/div/div/div/span[1]/input').send_keys(
+    #     get_code())
+    # # 点击登录
+    # driver.find_element_by_xpath('//*[@id="verifyCode"]/div[1]/div/div/div[3]/a').click()
     # 保存cookies
     time.sleep(3)
     saveCookie('selenium', cookies_file, driver)
@@ -413,82 +393,133 @@ def login(driver, username, password, cookies_file):
 
 
 def spider(driver, num):
-    driver.get(url)
-    # 每页10个
-    # 先抓全文，用户等，再根据是否有评论再去抓评论
-    for i in range(0, num):
-        # 在里面加srcb就会进不了评论区
-        print("次数：" + str(i))
-        if (i % 10) == 0:
-            if i ==0:
-                pass
-            else:
-                scrob(driver)
-        time.sleep(3)
-        elem = driver.find_elements_by_css_selector('div.card.m-panel.card9')[i]
-        # 获取时间
-        tim = elem.find_element_by_css_selector("span.time").text
-        # print(tim)
-        # print(driver.page_source)
-        user_name = elem.find_elements_by_css_selector('h3.m-text-cut')[0].text
-        # 微博内容
-        # 点击“全文”，获取完整的微博文字内容
-        weibo_content = get_all_text(driver, elem)
-        # 获取图片链接
-        links_text = get_pic(elem)
-        # if links_text:
-        #     print(links_text)
-        # 获取分享数，评论数和点赞数
-        shares = elem.find_elements_by_css_selector('i.m-font.m-font-forward + h4')[0].text
-        if shares == '转发':
-            shares = '0'
-        likes = elem.find_elements_by_css_selector('i.m-icon.m-icon-like + h4')[0].text
-        if likes == '赞':
-            likes = '0'
-        comments = elem.find_elements_by_css_selector('i.m-font.m-font-comment + h4')[0].text
-        # print(comments)
-        if comments == '评论':
-            comments = '0'
-        # 获取文章链接并进入评论区
-        elem.find_elements_by_css_selector('div.weibo-text')[0].click()
-        time.sleep(2)
-        driver.refresh()
-        current_url = driver.current_url
-        print(driver.current_url)
-        print("用户名：{}，内容：{}，点赞：{}，评论：{}，转发：{}".format(user_name, weibo_content, likes, comments, shares))
-        # 先写入第一张表，返回一个ID，传给评论获取
-        # 去重：
-        queryset = weibo.objects.filter(username=user_name, article=weibo_content).first()
-        if queryset:
-            if queryset.comment_num == int(comments):
-                # 当评论无更新要记得返回
-                botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
+    try:
+        driver.get(url)
+        # 每页10个
+        # 先抓全文，用户等，再根据是否有评论再去抓评论
+        for i in range(0, num):
+            # 在里面加srcb就会进不了评论区
+            print("次数：" + str(i))
+            if (i >= 17):
+                for j in range(0,int(i/17)):
+                    scrob(driver)
+            time.sleep(3)
+            try:
+                elem = driver.find_elements_by_css_selector('div.card.m-panel.card9')[i]
+                # 获取时间
+                tim = elem.find_element_by_css_selector("span.time").text
+                # print(tim)
+                # print(driver.page_source)
+                user_name = elem.find_elements_by_css_selector('h3.m-text-cut')[0].text
+                # 微博内容
+                # 点击“全文”，获取完整的微博文字内容
+                weibo_content = get_all_text(driver, elem)
+                # 获取图片链接
+                links_text = get_pic(elem)
+                # if links_text:
+                #     print(links_text)
+                # 获取分享数，评论数和点赞数
+                shares = elem.find_elements_by_css_selector('i.m-font.m-font-forward + h4')[0].text
+                if shares == '转发':
+                    shares = '0'
+                likes = elem.find_elements_by_css_selector('i.m-icon.m-icon-like + h4')[0].text
+                if likes == '赞':
+                    likes = '0'
+                comments = elem.find_elements_by_css_selector('i.m-font.m-font-comment + h4')[0].text
+                # print(comments)
+                if comments == '评论':
+                    comments = '0'
+                # 获取文章链接并进入评论区
+                wait = WebDriverWait(elem, timeout=10)
+                wait.until(expected.visibility_of_element_located((By.CSS_SELECTOR, "div.weibo-text")))
+                # elem.find_elements_by_css_selector('div.weibo-text')[0].click()
+                botton = 'document.getElementsByClassName("weibo-text")[%d].click();'% i
                 driver.execute_script(botton)
                 time.sleep(2)
+                driver.refresh()
+                current_url = driver.current_url
+                print(driver.current_url)
+                print("用户名：{}，内容：{}，点赞：{}，评论：{}，转发：{}".format(user_name, weibo_content, likes, comments, shares))
+                # 先写入第一张表，返回一个ID，传给评论获取
+                # 去重：
+                queryset = weibo.objects.filter(username=user_name, article=weibo_content).first()
+                if queryset:
+                    if int(queryset.comment_num) == int(comments):
+                        # wait = WebDriverWait(driver, timeout=10)
+                        # wait.until(expected.visibility_of_element_located((By.CSS_SELECTOR, "i.m-font.m-font-arrow-left")))
+                        # 当评论无更新要记得返回
+                        # botton = 'document.getElementsByClassName("m-font-arrow-left")[0].click();'
+                        # driver.execute_script(botton)
+                        # time.sleep(2)
+                        # btn = driver.find_element_by_css_selector("i.m-font.m-font-arrow-left")
+                        btn =iselement(driver,"i.m-font.m-font-arrow-left",True)
+                        j = 0
+                        while(btn==''):
+                            driver.refresh()
+                            time.sleep(5)
+                            j+=1
+                            if j > 6:
+                                # 网络问题
+                                continue
+                                # break # 触发反爬机制
+                        btn.click()
+                        time.sleep(3)
+                    else:
+                        get_comments(driver, elem, int(comments), queryset.pk)
+                else:
+                    art_id = insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text,current_url)
+                    print("已写入文章")
+                    get_comments(driver, elem, int(comments), art_id)
+                # 延迟抓取，避免触发反爬机制
+                time.sleep(35)
+            except:
                 pass
-            else:
-                get_comments(driver, elem, int(comments), queryset.pk)
-        else:
-            art_id = insert_weibo(user_name, weibo_content, likes, comments, shares, tim, links_text,current_url)
-            print("已写入文章")
-
-            get_comments(driver, elem, int(comments), art_id)
-
+    except:
+        pass
 
 
 def run():
+    # chrrome版本大于88
+    opt = Options()
+    opt.add_argument("--disable-blink-features=AutomationControlled")
+    # opt.add_argument("--disable-gpu")
+
+    # opt.add_argument('--headless')
+    ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'
+    opt.add_argument("user-agent=" + ua)
+    opt.add_argument('no-sandbox')
+    opt.add_argument('disable-dev-shm-usage')
     driver = webdriver.Chrome(options=opt)  # 你的chromedriver的地址
     # driver = webdriver.Remote(command_executor='http://selenium-hub:4444/wd/hub', options=opt)
     driver.implicitly_wait(2)  # 隐式等待2秒
     # 爬取
-    username = '19965440781'
-    password = 'buzhi123456'
-    # username = '19304914193'
-    # password = '123456buzhi'
+    # username = '19965440781'
+    # password = 'buzhi123456'
+    username = '19304914193'
+    password = '123456buzhi'
     login(driver, username, password, 'cookie.txt')
-    spider(driver, 10)
+    spider(driver, 100)
     # driver.quit()
 
-
+'''
+def iselement(elem, css_sel, istest=False):
+    """
+    实现判断元素是否存在
+    :param elem: 浏览器对象
+    :param css_sel: css_selector表达式
+    :param istest: 如果为True,如果元素存在返回内容将为元素文本内容
+    """
+    try:
+        target = elem.find_elements_by_css_selector(css_sel)
+    except exceptions.NoSuchElementException:
+        return ''
+    else:
+        if istest:
+            text = ""
+            for i in range(len(target)):
+                text += target[i].text
+            return text
+        return ''
+'''
 if __name__ == '__main__':
     run()

@@ -31,7 +31,7 @@ class FirstComment(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return "{}{}".format(self.username, self.context)
+        return "{}:{}".format(self.username, self.context)
 
 
 class SecondComment(models.Model):
@@ -45,7 +45,7 @@ class SecondComment(models.Model):
         verbose_name_plural = verbose_name
 
     def __str__(self):
-        return "{}{}".format(self.username, self.context)
+        return "{}:{}".format(self.username, self.context)
 
 
 """获取方法

@@ -50,7 +50,6 @@ class weiboAdmin(admin.ModelAdmin):
     'yuqing.FirstCommentAdmin' must inherit from 'InlineModelAdmin'.
     '''
 
-    inlines = [FirstCommentInline, SecondCommentInline]
 
 
 class FirstCommentAdmin(admin.ModelAdmin):
